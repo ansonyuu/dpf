@@ -1,9 +1,13 @@
 Sub radpf005()
-
+'
+' radpf Macro
+' Macro recorded 22/05/00 by NIE; last modified Melbourne October 2007; 10 January 2008
+'RADPFV5.13.6  version5.13.6 includes separate current factors for axial and radial phases.
+' Keyboard Shortcut: Ctrl+a
+'
     Range("A20:DA30000").Select
     Selection.ClearContents
 Rem 16 Feb 2022 RADPFV5.16FIB standardised Fast Ion Beam version, rationalised with all radiation data outputted as (plasma self-absorption) AB corrected
-
 Rem 19 May 2013 RADPFv5.15FIB standardised Fast Ion Beam version for general release and public testing
 Rem 12 March 2013 (10 km over Oz, East Timor & Indonesia) corrected 'slow-compression' phase peak voltage which is large for case of radiative collapse
 Rem 12 March 2013 if radiative collapse VRmax > 3x pre-pinch phase VRmax; then U= VRMAX (of the Rad Coll) otherwise U=3*VRMAX (of the pre-pinch)
@@ -72,11 +76,8 @@ Rem * II = Current derivative, I0 = Current Intergral, all normalized
 Rem * HOWEVER ALL QUANTITIES WITH An R ATTACHED, HAVE BEEN RE-COMPUTED TO GIVE LABORATORY VALUES; e.g. TR IS TIME RE-COMPUTED IN MICROSEC;IR IS CURRENT RE-COMPUTED IN kA AND SO ON.
 Rem  D = Time increment, V = tube voltage, all normalized
 
-
-
 Dim backhowmanyrows As Integer
 ENDFLAG = 0: DFLAG = 0: DVFLAG = 0: NTN = 0: NBN = 0: NN = 0: VRMAX = 0: peakvs = 0: peakvp = 0: tc5 = 1:
-
 Rem Quick Device Choice
 device = ActiveSheet.Cells(4, 15)
 If device = 0 Then GoTo 320
@@ -106,7 +107,6 @@ Rem Input some constants in SI units
 
 356 Mu = 1.257 * 10 ^ -6: Pi = 3.142: bc = 1.38 * 10 ^ -23: mi = 1.67 * 10 ^ -27: MUK = Mu / (8 * Pi * Pi * bc): CON11 = 1.6 * 10 ^ -20: CON12 = 9.999999 * 10 ^ -21
 CON2 = 4.6 * 10 ^ -31: UGCONS = 8.310001 * 10 ^ 3: FRF = 0.3: fe = 1 / 3: FLAG = 0
-
 Rem reset EINP, energy dissipated by dynamic resistance effect, which is 0.5 (Ldot) I^2, considering current taking part in the motion
 EINP = 0
 Rem If operating in Deuterium, set value of G
@@ -153,9 +153,9 @@ Rem Write on EXCEL SHEET, in convenient units, density, characteristic quantitie
 ActiveSheet.Cells(7, 11) = 0: ActiveSheet.Cells(7, 12) = 0: ActiveSheet.Cells(7, 13) = 0: ActiveSheet.Cells(7, 14) = 0: ActiveSheet.Cells(7, 15) = 0
 ActiveSheet.Cells(11, 8) = 0: ActiveSheet.Cells(11, 10) = 0: ActiveSheet.Cells(11, 12) = 0: ActiveSheet.Cells(11, 14) = 0: ActiveSheet.Cells(17, 25) = 0: ActiveSheet.Cells(17, 32) = 0
 
-If P0 > 20 Then GoTo 440
+If P0 < 20 Then GoTo 440
 
-
+430 Stop
 Rem " WARNING! In real experiments, Pressure above 20 torr will not produce focussing"
 Rem " ACTION RECOMMENDED: REDUCE FILL PRESSURE below 20 torr"
 Rem Print "Click on red cross on top right hand corner to return to spread sheet"
@@ -253,6 +253,8 @@ ActiveSheet.Cells(rowj, 62) = 100 * Einductance / (0.5 * C0 * V0 * V0): ActiveSh
 ActiveSheet.Cells(rowj, 64) = ni / (10 ^ 23): ActiveSheet.Cells(rowj, 65) = TM / (10 ^ 6): ActiveSheet.Cells(rowj, 67) = nimax / (10 ^ 23)
 ActiveSheet.Cells(rowj, 69) = 100 * Wpiston / (0.5 * C0 * V0 * V0)
 rowj = rowj + 1
+
+
          
 If TAPER = 0 Then GoTo 780
 If Z < zTAPERSTART Then GoTo 780
@@ -269,6 +271,7 @@ V = (tc4) * II + ZZ * I * tc3: V = V * BE
  
 GoTo 800
 
+
 780 V = Z * II + ZZ * I: V = V * BE
 Rem Compute Generating Quantities (ie acceleration and IDOT) before loopback to continue step-by-step integration
          
@@ -278,6 +281,8 @@ AC = (AL * AL * I * I - ZZ * ZZ) / Z
 Rem Check if end of axial phase is reached, before loopback
 
 800 If Z < 1 Then GoTo 580
+
+_____
 Laxial = ZR * 2 * Log(C)
 Rem Leave Axial Phase integration, record last value of axial speed
 
@@ -305,7 +310,7 @@ rowi = 20: FIRSTRADIALROW = rowi
 Rem Set some initial values for Radial Inward Phase step-by-step integration
 Rem Reset time increment to finer step-size
 
-930 KS = 1: KP = 1: ZF = 0.00001: zFLAG = 0: gFLAG = 0
+930 KS = 1: KP = 1: ZF = 1E-05: zFLAG = 0: gFLAG = 0
 Rem SET TIME INCREMENT TO HAVE ABOUT 1500 (up to 3000 for high pressure) STEPS IN RADIAL INWARD SHOCK PHASE
 
 If TAPER = 0 Then GoTo 950
@@ -371,7 +376,7 @@ GoTo 1035
 GoTo 1035
 1028 g = 1.15 + 2.22 * 10 ^ -7 * (TM - 2.4 * 10 ^ 4)
 GoTo 1035
-1029 g = 1.66667 - 0.0000767 * (TM - 10000)
+1029 g = 1.66667 - 7.67E-05 * (TM - 10000)
 GoTo 1035
 1030 g = 1.66667
 
@@ -394,7 +399,7 @@ GoTo 1080
 GoTo 1080
 1047 Z = 1.9 + 1.5 * (10 ^ -5) * (TM - 4.5 * 10 ^ 4)
 GoTo 1080
-1048 Z = 0.000063 * (TM - 15000)
+1048 Z = 6.3E-05 * (TM - 15000)
 If FLAG = 10 Then GoTo 3030
 If FLAG = 11 Then GoTo 4300
 GoTo 1080
@@ -866,7 +871,7 @@ GoTo 5065
 Rem estimate proportion of each radiation component using their unabsorbed values:  hence estimate absorption corrected QBR, QLN, QREC; including contribution from surface radiation
 Rem uncorrected for absorption
 5065 QTOTAL = (QBR + QLN + QREC)
- If -QTOTAL < 0.000001 Then GoTo 5070
+ If -QTOTAL < 1E-06 Then GoTo 5070
 rbr = QBR / QTOTAL: rln = QLN / QTOTAL: rrec = QREC / QTOTAL: rsxr = QSXR / QTOTAL: QBR = rbr * QRAD: QLN = rln * QRAD: QREC = rrec * QRAD
 
 If ZN = 7 Then GoTo 5066
@@ -1103,40 +1108,6 @@ Rem ActiveSheet.Cells(17, 49) = BEnFc * 3.142 * (amin / 1000) ^ 2
 Rem ActiveSheet.Cells(17, 50) = 100 * (BEnFc * 3.142 * (amin / 1000) ^ 2) / Ecap
 
 
-Set ws = Worksheets("PARAM")
-paramCount = CInt(ws.Cells(6, 2))
-
-
-Rem input parameters
-ws.Cells(paramCount, 5) = ActiveSheet.Cells(5, 1)
-ws.Cells(paramCount, 6) = ActiveSheet.Cells(5, 2)
-ws.Cells(paramCount, 7) = ActiveSheet.Cells(5, 3)
-ws.Cells(paramCount, 8) = ActiveSheet.Cells(5, 4)
-ws.Cells(paramCount, 9) = ActiveSheet.Cells(5, 5)
-ws.Cells(paramCount, 10) = ActiveSheet.Cells(5, 6)
-
-ws.Cells(paramCount, 11) = ActiveSheet.Cells(7, 1)
-ws.Cells(paramCount, 12) = ActiveSheet.Cells(7, 2)
-ws.Cells(paramCount, 13) = ActiveSheet.Cells(7, 3)
-ws.Cells(paramCount, 14) = ActiveSheet.Cells(7, 4)
-
-ws.Cells(paramCount, 15) = ActiveSheet.Cells(9, 1)
-ws.Cells(paramCount, 16) = ActiveSheet.Cells(9, 2)
-ws.Cells(paramCount, 17) = ActiveSheet.Cells(9, 3)
-ws.Cells(paramCount, 18) = ActiveSheet.Cells(9, 4)
-ws.Cells(paramCount, 19) = ActiveSheet.Cells(9, 5)
-
-
-Rem results output
-ws.Cells(paramCount, 20) = NN
-ws.Cells(paramCount, 21) = Jb
-ws.Cells(paramCount, 22) = Eflux
-ws.Cells(paramCount, 23) = Fluence
-ws.Cells(paramCount, 24) = Ebeam
-ws.Cells(paramCount, 25) = ZFDOT / 10 ^ 4
-ws.Cells(paramCount, 26) = Nbeam
-
-
 Rem Expanded axial phase starts; integrated in normalised quantities
 7380 D = 0.005: BE = BE / CFR: EINP = EINP1: T = T / T0: I = I / I0: IO = CH / (I0 * T0): ZS = ZF / Z0: ZZ = ZG: Z = 1 + ZS
  l = (Log(C) + 0.25) / Log(C): H = C * C / (C * C - 1): H = Sqr(H): L1 = (Log(C) + 0.5) / Log(C)
@@ -1174,5 +1145,4 @@ GoTo 7480
 9888
 
 End Sub
-
 
