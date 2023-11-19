@@ -139,11 +139,6 @@ tapergrad = (RADA - ENDRAD) / (Z0 - TAPERSTART)
 
 Rem Calculate characteristic quantities and scaling parameters
 
-382 I0 = V0 / (Sqr(L0 / C0)): T0 = Sqr(L0 * C0): TA = Sqr(4 * Pi * Pi * (C * C - 1) / (Mu * Log(C))) * ((Z0 * Sqr(RHO)) / (I0 / RADA)) * ((Sqr(massf)) / CURRF)
-395 ZZCHAR = Z0 / TA: AL = T0 / TA: AA = Sqr((g + 1) * (C * C - 1) / Log(C)) * (f / 2) * (Sqr(massf / massfr)) * (currfr / CURRF)
-402 RESF = R0 / (Sqr(L0 / C0)): BE = 2 * (10 ^ -7) * Log(C) * Z0 * CURRF / L0: BF = BE / (Log(C) * f): VPINCHCH = ZZCHAR * AA / f: TPINCHCH = RADA / VPINCHCH
-Rem Calculate ratio of characteristic capacitor time to sum of characteristic axial & radial times
-ALT = (AL * AA) / (1 + AA)
 Rem Write on EXCEL SHEET, in convenient units, density, characteristic quantities and scaling parameters
 
 415 ActiveSheet.Cells(11, 1) = RHO: ActiveSheet.Cells(11, 2) = I0: ActiveSheet.Cells(11, 3) = T0: ActiveSheet.Cells(11, 4) = TA
@@ -282,7 +277,7 @@ Rem Check if end of axial phase is reached, before loopback
 
 800 If Z < 1 Then GoTo 580
 
-_____
+
 Laxial = ZR * 2 * Log(C)
 Rem Leave Axial Phase integration, record last value of axial speed
 
@@ -303,6 +298,8 @@ Rem * radial shock and piston speed,VZ is axial pinch length elongating rate
 Rem AS BEFORE QUANTITIES WITH AN R ATTACHED HAVE BEEN RE-COMPUTED AS REAL, i.e. UN-NORMALIZED QUANTITIES EXPRESSED IN USUAL LABORATORY UNITS.
 
 Rem End of Axial Phase; Start of Radial Inward Shock Phase
+
+
 Rem : FOR THIS PHASE Z=EFFECTIVE CHARGE NUMBER!!!
 
 rowi = 20: FIRSTRADIALROW = rowi
@@ -327,7 +324,6 @@ Rem For H2,D2 and He, assume fully ionized with gamma=1.667 during all of radial
 Z = ZN
 Rem Start Step-by-step integration of Radial Inward Shock Phase, in non-dimensional units
 Rem First, compute Inward shock speed
-
 trradialstart = T * T0: ActiveSheet.Cells(11, 8) = trradialstart * (10 ^ 6)
 
 980 If TAPER = 0 Then GoTo 990
@@ -341,6 +337,7 @@ Rem Hence the shock speed is re-calculated in SI units, then Plasma Temp TM is c
 
 1000 TM = (MW / (8315)) * ((GCAP - 1) / (GCAP * GCAP)) * ((VSR * VSR) / ((1 + Z) * dissociatenumber)): TeV = TM / (1.16 * 10 ^ 4)
 Rem Select Table for G & Z; according to gas
+
 
 1005 If ZN = 1 Then GoTo 1080
 If ZN = 2 Then GoTo 1080
@@ -403,6 +400,7 @@ GoTo 1080
 If FLAG = 10 Then GoTo 3030
 If FLAG = 11 Then GoTo 4300
 GoTo 1080
+
 
 Rem Table of G for ARGON; pre-calculated from Corona Model
 
@@ -548,6 +546,8 @@ If FLAG = 10 Then GoTo 3030
 If FLAG = 11 Then GoTo 4300
 GoTo 2000
 
+
+
 Rem For Krypton compute specific heat ratio g and effective charge z using polynomials fitted from Corona model
 1190 If zFLAG = 1 Then Z = 36: GoTo 1191
 Z = -0.0347 * ((Log(TeV) / Log(10)) ^ 6) + 0.6605 * ((Log(TeV) / Log(10)) ^ 5) - 4.5854 * ((Log(TeV) / Log(10)) ^ 4) + 13.565 * ((Log(TeV) / Log(10)) ^ 3) - 14.619 * ((Log(TeV) / Log(10)) ^ 2) + 9.9659 * (Log(TeV) / Log(10)) - 0.2588
@@ -560,6 +560,9 @@ If g > 1.6667 Then g = 1.6667: gFLAG = 1
 If FLAG = 10 Then GoTo 3030
 If FLAG = 11 Then GoTo 4300
 GoTo 2000
+
+
+
 Rem Next compute Axial elongation speed and Piston speed, using 'lookback' values to correct for finite small disturbance speed effect
 
 2000 VZ = -G1 * VS: K1 = KS / KP
@@ -574,11 +577,13 @@ V = (BE * tc5 - BF * (Log(KP / c2)) * ZF) * II - I * (BF * (ZF / KP) * VP + (BF 
 GoTo 2090
 2080 V = (BE - BF * (Log(KP / C)) * ZF) * II - I * (BF * (ZF / KP) * VP + (BF * (Log(KP / C))) * VZ): II = (1 - IO + BF * I * (ZF / KP) * VP + BF * (Log(KP / C)) * I * VZ - RESF * I) / (1 + BE - BF * (Log(KP / C)) * ZF)
 
+
 Rem Increment time and Integrate, by linear approx, for I, flowed charge I0, KS, KP and ZF
 
 2090 T = T + D: I = I + II * D: IO = IO + I * D: KS = KS + VS * D: KP = KP + VP * D: ZF = ZF + VZ * D
 
 2190 Rem * Re-scales speeds, distances and time to real, convenient units
+
 
 If TAPER = 0 Then GoTo 2210
  SSR = VS * (ENDRAD / T0) * 10 ^ -4: SPR = VP * (ENDRAD / T0) * 10 ^ -4: SZR = VZ * (ENDRAD / T0) * 10 ^ -4
@@ -603,6 +608,7 @@ EINP = EINP + (10 ^ 3) * (SZR * Log(1000 * RADB / kpr) - (SPR * (zfr / kpr))) * 
 Rem Also integrate for piston work
 Wpiston = Wpiston + 0.1 * (DZFR * Log(1000 * RADB / kpr) - DKPR * (zfr / kpr)) * IR * IR * CURRF * CURRF: Lplasma = Laxial + (zfr * 2 * (10 ^ -1) * Log(1000 * RADB / kpr))
 Einductance = 0.5 * 10 ^ 6 * IR * IR * (CURRF * CURRF * Lplasma * (10 ^ -9) + L0): ni = massfr * N0 * ((g + 1) / (g - 1)): nimax = N0 * ((g + 1) / (g - 1))
+
 Rem Write, in EXCEL Sheet, the data for the step-by-step integration
 ActiveSheet.Cells(rowj, 1) = TR: ActiveSheet.Cells(rowj, 2) = IR: ActiveSheet.Cells(rowj, 3) = VR: ActiveSheet.Cells(rowj, 52) = TR
 ActiveSheet.Cells(rowj, 53) = IR * CURRF: ActiveSheet.Cells(rowj, 54) = KSR: ActiveSheet.Cells(rowj, 55) = kpr: ActiveSheet.Cells(rowj, 56) = zfr
@@ -617,6 +623,8 @@ ActiveSheet.Cells(rowi, 14) = SPR: ActiveSheet.Cells(rowi, 15) = SZR: ActiveShee
 ActiveSheet.Cells(rowi, 33) = Z: ActiveSheet.Cells(rowi, 41) = EINP
 
 rowi = rowi + 1: rowj = rowj + 1
+
+_____
 
 Rem To apply finite small disturbance speed correction. Compute propagation time and the 'lookback' row number
 If KSR > kpr Then GoTo 2300
@@ -636,6 +644,8 @@ Rem Check whether inward shock front has reached axia
 2314 If KS > 0 Then GoTo 980
 Rem Inward shock front has reached axis, we have exited from Radial Inward Phase and now go on to the Reflected Shock Phase
 Rem Put ni1 as the last average ion density on axis before reflected shock starts; nimax1 as last shocked density before RS starts
+
+
 ni1 = ni: nimax1 = nimax: PLN = 0
 2350 Rem "Part 3 starts : Radial reflected shock phase"
 2360 Debug.Print "Part 3 starts : Radial reflected shock phase"
@@ -658,14 +668,15 @@ TMRS = TM * Tratio: TMmax = TMRS: TeV = TMRS / (1.16 * 10 ^ 4)
 Rem FLAG=10 indicates computation is in RS phase; allows routing to earlier tables for g and z; but after getting g and z routes back to RS phase.
 FLAG = 10
 GoTo 1005
-3030 RRF = 0: FRF = 0.33: VSV = VS: VRF = -FRF * VS: G1 = 2 / (g + 1): G2 = (g - 1) / g: MUP = Mu / (2 * Pi): VZ = -G1 * VS
-Rem Introduce differential in current factors for axial and radial phases; already introduced earlier around 815
-3080 T = T + D: RRF = RRF + VRF * D: VRFCMUS = VRF * 10 ^ -4
-3110 K1 = 0: E1 = G1 * K1 * VSV: E2 = (1 / g) * (rp / I) * (1 - K1 * K1) * IDOT
-3140 E3 = (G1 / 2) * (rp / ZF) * (1 - K1 * K1) * VZ: E4 = G2 + (1 / g) * K1 * K1: VP = (E1 - E2 - E3) / E4
-3180 IDOT = (V0 - (CH / C0) - I * R0 - I * CURRF * MUP * ((Log(RADB / rp)) * VZ - (ZF / rp) * VP)) / (L0 + MUP * CURRF * ((Log(C)) * Z0 * tc5 + (Log(RADB / rp)) * ZF))
-3185 V = MUP * I * ((Log(RADB / rp)) * VZ - (ZF / rp) * VP) + MUP * ((Log(RADB / rp)) * ZF + (Log(C)) * Z0 * tc5) * IDOT
-3186 V = V * CURRF: I = I + IDOT * D: CH = CH + I * D: rp = rp + VP * D: ZF = ZF + VZ * D
+> 3030 RRF = 0: FRF = 0.33: VSV = VS: VRF = -FRF * VS: G1 = 2 / (g + 1): G2 = (g - 1) / g: MUP = Mu / (2 * Pi): VZ = -G1 * VS
+
+>Rem Introduce differential in current factors for axial and radial phases; already introduced earlier around 815
+>3080 T = T + D: RRF = RRF + VRF * D: VRFCMUS = VRF * 10 ^ -4
+>3110 K1 = 0: E1 = G1 * K1 * VSV: E2 = (1 / g) * (rp / I) * (1 - K1 * K1) * IDOT
+>3140 E3 = (G1 / 2) * (rp / ZF) * (1 - K1 * K1) * VZ: E4 = G2 + (1 / g) * K1 * K1: VP = (E1 - E2 - E3) / E4
+>3180 IDOT = (V0 - (CH / C0) - I * R0 - I * CURRF * MUP * ((Log(RADB / rp)) * VZ - (ZF / rp) * VP)) / (L0 + MUP * CURRF * ((Log(C)) * Z0 * tc5 + (Log(RADB / rp)) * ZF))
+>3185 V = MUP * I * ((Log(RADB / rp)) * VZ - (ZF / rp) * VP) + MUP * ((Log(RADB / rp)) * ZF + (Log(C)) * Z0 * tc5) * IDOT
+>3186 V = V * CURRF: I = I + IDOT * D: CH = CH + I * D: rp = rp + VP * D: ZF = ZF + VZ * D
 
 Rem D is time increment in secs, DKPR is piston position increment & DZFR length position increment, both in SI units
 DKPR = SPR * D * 10 ^ 4: DZFR = SZR * D * 10 ^ 4
